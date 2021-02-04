@@ -6,6 +6,4 @@ const app = express();
 app.use(express.json());
 app.use(routes);
 
-app.listen(3333, ()=>{
-    console.log('Backend is working...')
-});
+app.listen(3333);
