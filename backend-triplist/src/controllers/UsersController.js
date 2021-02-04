@@ -28,35 +28,23 @@ module.exports = {
             const user_authorization_id = request.headers.authorization;
 
             const [person] = await connection("users")
-                .where( "user_id", user_authorization_id )
-                .select("*")
+                .where({ firstname: userToBeDeleted, user_id: user_authorization_id })
 
             console.log(person)
 
-            if (user_authorization_id !== [person].user_id) {
-                return response.status(401).json("No users found");
+            if (person === undefined) {
+                return response.status(404).json("No users found");
             }
             else {
                 await connection("users")
-                    .where({ "user_id": user_authorization_id, "firstname": userToBeDeleted })
-                    .delete();
+                    .where({ firstname: userToBeDeleted, user_id: user_authorization_id })
+                    .first()
+                    .delete()
 
-                return response.send("User deleted successfully!")
+                return response.status(200).send("User deleted successfully")
             }
-        }
-
-        catch (error) {
-            return response.status(401).json({ message: "User not found!" })
+        } catch (error) {
+            return response.status(401).json({ message: "Something wrong happen while trying to delete user" })
         }
     }
-    //PROBLEMAS AINDA AO DELETAR,ESTÁ SEMPRE CAINDO NO CATCH
-    // if (user_authorization_id !== person.user_id) {
-    //     return response.status(401).json("Operation is not allowed");
-    // }
-    // else {
-    //     await connection("users")
-    //         .where({ "firstname": userToBeDeleted, "user_id": user_authorization_id })
-    //     console.log("jabdb")
-    //         .delete();
-    // }
 }

@@ -7,5 +7,5 @@ app.use(express.json());
 app.use(routes);
 
 app.listen(3333, () => {
-    console.log("Backend is working property")
+    console.log("Backend is working property...")
 });
