@@ -8,5 +8,6 @@ const CitiesController = require('./controllers/CitiesController');
 routes.post('/users', UsersController.create);
 routes.get('/users', UsersController.index);
 routes.delete('/users/:name', UsersController.delete);
+routes.put('/users/:name', UsersController.update);
 
 module.exports = routes;

@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { select } = require('../database/connection');
+const { select, update } = require('../database/connection');
 const connection = require('../database/connection');
 
 module.exports = {
@@ -30,8 +30,6 @@ module.exports = {
             const [person] = await connection("users")
                 .where({ firstname: userToBeDeleted, user_id: user_authorization_id })
 
-            console.log(person)
-
             if (person === undefined) {
                 return response.status(404).json("No users found");
             }
@@ -46,5 +44,34 @@ module.exports = {
         } catch (error) {
             return response.status(401).json({ message: "Something wrong happen while trying to delete user" })
         }
+    },
+
+    async update(request, response) {
+        // try {
+        const userToBeUpdated = request.params.name;
+        const { lastname, age, nationality } = request.body;
+        const user_authorization_id = request.headers.authorization;
+        const updateData = {
+            lastname,
+            age,
+            nationality
+        }
+
+        const [personFound] = await connection("users")
+            .where({ firstname: userToBeUpdated, user_id: user_authorization_id })
+
+        if (personFound == undefined) {
+            return response.send("No person was found");
+        }
+        else {
+            await connection("users")
+                .where({ firstname: userToBeUpdated, user_id: user_authorization_id })
+                .update(updateData);
+
+            return response.status(200).json("User updated successfully")
+        }
+        // } catch (error) {
+        //     return response.status(401).json({ message: "Something wrong happen while trying to update user" })
+        // }
     }
 }
