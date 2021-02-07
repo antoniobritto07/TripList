@@ -1,13 +1,22 @@
 const express = require('express');
 const routes = express.Router();
+const { celebrate } = require('celebrate');
 
 const UsersController = require('./controllers/UsersController');
+const UserValidate = require('./validators/UsersValidator');
+
 const CountriesController = require('./controllers/CountriesController');
+
 const CitiesController = require('./controllers/CitiesController');
 
-routes.post('/users', UsersController.create);
+//Users
+routes.post('/users', celebrate(UserValidate.createUser), UsersController.create);
 routes.get('/users', UsersController.index);
-routes.delete('/users/:name', UsersController.delete);
 routes.put('/users/:name', UsersController.update);
+routes.delete('/users/:name', UsersController.delete);
+
+//Countries
+
+//Cities
 
 module.exports = routes;

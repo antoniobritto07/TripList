@@ -1,77 +1,67 @@
 const { v4: uuidv4 } = require('uuid');
-const { select, update } = require('../database/connection');
 const connection = require('../database/connection');
+
+const UsersModel = require('../models/UsersModel')
 
 module.exports = {
     async create(request, response) {
-        const { firstname, lastname, age, nationality } = request.body;
-        const user_id = uuidv4();
+        try {
+            const { firstname, lastname, age, nationality } = request.body;
+            const user_id = uuidv4();
+            console.log(firstname)
 
-        await connection('users').insert({
-            user_id,
-            firstname,
-            lastname,
-            age,
-            nationality
-        })
-        return response.send(`Thank you for your subscription, your id is: ${user_id}`);
+            const result = await UsersModel.create({ user_id, firstname, lastname, age, nationality })
+
+            return response.status(200).json({ message: `User created successfully! Your id is ${user_id}` });
+        } catch (error) {
+            console.log(error);
+            return response.send("Something got wrong when trying to create a new user")
+        }
     },
 
     async index(request, response) {
-        const allUsers = await connection('users').select('*');
-        return response.json(allUsers);
+        try {
+            const allUsers = await UsersModel.listAll();
+            return response.json(allUsers);
+        } catch (error) {
+            console.log(error);
+            return response.send("Something got wrong when trying to list all users")
+        }
     },
 
     async delete(request, response) {
         try {
-            const userToBeDeleted = request.params.name;
+            const { name } = request.params;
             const user_authorization_id = request.headers.authorization;
 
-            const [person] = await connection("users")
-                .where({ firstname: userToBeDeleted, user_id: user_authorization_id })
+            const result = await UsersModel.deleteUser(user_authorization_id, name)
 
-            if (person === undefined) {
-                return response.status(404).json("No users found");
-            }
-            else {
-                await connection("users")
-                    .where({ firstname: userToBeDeleted, user_id: user_authorization_id })
-                    .first()
-                    .delete()
+            return response.status(200).json({ message: "User deleted successfully" })
 
-                return response.status(200).send("User deleted successfully")
-            }
         } catch (error) {
+            console.log(error);
             return response.status(401).json({ message: "Something wrong happen while trying to delete user" })
         }
     },
-
     async update(request, response) {
-        // try {
-        const userToBeUpdated = request.params.name;
-        const { lastname, age, nationality } = request.body;
-        const user_authorization_id = request.headers.authorization;
-        const updateData = {
-            lastname,
-            age,
-            nationality
-        }
+        try {
+            const { lastname, age, nationality } = request.body;
+            const { name } = request.params;
+            const user_authorization_id = request.headers.authorization;
+            console.log(lastname, age, nationality, name, user_authorization_id)
+            const updateData = {
+                user_id: user_authorization_id,
+                firstname: name,
+                lastname,
+                age,
+                nationality
+            }
+            const result = await UsersModel.updateUser(user_authorization_id, name, updateData)
 
-        const [personFound] = await connection("users")
-            .where({ firstname: userToBeUpdated, user_id: user_authorization_id })
-
-        if (personFound == undefined) {
-            return response.send("No person was found");
+            return response.status(200).json("message: User updated successfully")
+        } catch (error) {
+            console.log(error)
+            return response.status(401).json({ message: "Something wrong happen while trying to update user" })
         }
-        else {
-            await connection("users")
-                .where({ firstname: userToBeUpdated, user_id: user_authorization_id })
-                .update(updateData);
-
-            return response.status(200).json("User updated successfully")
-        }
-        // } catch (error) {
-        //     return response.status(401).json({ message: "Something wrong happen while trying to update user" })
-        // }
     }
 }
